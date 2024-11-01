@@ -1,4 +1,31 @@
 {
   "name": "object-mapping-indexer",
-  "packageManager": "yarn@4.5.1"
+  "packageManager": "yarn@4.2.2",
+  "type": "module",
+  "author": {
+    "name": "Autonomys",
+    "website": "https://autonomys.xyz"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node --loader ts-node/esm",
+    "test": "jest"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "pg": "^8.13.1",
+    "uuid": "^11.0.2",
+    "websocket": "^1.0.35"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/pg": "^8.11.10",
+    "@types/websocket": "^1.0.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
 }
