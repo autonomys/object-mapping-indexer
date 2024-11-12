@@ -3,7 +3,7 @@ import Websocket from "websocket";
 type RPCMessage = {
   jsonrpc: string;
   method: string;
-  params: any[] | Record<string, any>;
+  params: any;
   id: number;
 };
 
@@ -60,7 +60,12 @@ export const createWS = (endpoint: string): WS => {
   };
 
   ws.onerror = (event) => {
-    console.error(`WebSocket error: ${event}`);
+    const errorDetails = {
+      readyState: ws.readyState,
+      url: endpoint,
+      message: event.message || "Unknown error",
+    };
+    console.error("WebSocket connection error:", errorDetails);
   };
 
   return { send, on, off };

@@ -1,5 +1,5 @@
 import { config } from "../config.js";
-import { createWS, WS } from "./ws.js";
+import { createWS, WS } from "./ws/client.js";
 
 type SubstrateSubscription = {
   id: string;
@@ -46,9 +46,12 @@ export const createSubstrateEventListener = () => {
       };
 
       state.ws.on((event) => {
-        state.subscriptions[subscribingEventName].callbacks.forEach(
-          (callback) => callback(event.params)
-        );
+        const subscription = state.subscriptions[subscribingEventName];
+        if (subscription && subscription?.id === event?.params?.subscription) {
+          subscription.callbacks.forEach((callback) =>
+            callback(event.params.result)
+          );
+        }
       });
     } else {
       state.subscriptions[subscribingEventName].callbacks.push(callback);

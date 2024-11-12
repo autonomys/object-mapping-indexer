@@ -1,19 +1,21 @@
+import { logger } from "../drivers/logger.js";
 import { createSubstrateEventListener } from "../drivers/substrateEvents.js";
+import { ObjectMappingListEntrySchema } from "../models/mapping.js";
+import { objectMappingUseCase } from "../useCases/objectMapping.js";
 
 type ObjectMappingListener = {
   start: () => void;
 };
 
-type Block = {
-  params: {
-    parentHash: string;
-    number: string;
-    stateRoot: string;
-    extrinsicsRoot: string;
-    digest: {
-      logs: string[];
-    };
-  };
+const events: Record<string, (event: unknown) => void> = {
+  subspace_subscribeObjectMappings: async (event: unknown) => {
+    const parsed = ObjectMappingListEntrySchema.safeParse(event);
+    if (!parsed.success) {
+      logger.error(`Invalid event: ${JSON.stringify(event)}`);
+      return;
+    }
+    await objectMappingUseCase.processObjectMapping(parsed.data);
+  },
 };
 
 export const createObjectMappingListener = (): ObjectMappingListener => {
@@ -21,16 +23,9 @@ export const createObjectMappingListener = (): ObjectMappingListener => {
     start: () => {
       const substrateListener = createSubstrateEventListener();
 
-      substrateListener.subscribe("chain_subscribeNewHeads", (event: Block) => {
-        console.log("New block:", event);
-      });
-
-      substrateListener.subscribe(
-        "subspace_subscribeObjectMappings",
-        (event: any) => {
-          console.log(event);
-        }
-      );
+      for (const [event, handler] of Object.entries(events)) {
+        substrateListener.subscribe(event, handler);
+      }
     },
   };
 };
