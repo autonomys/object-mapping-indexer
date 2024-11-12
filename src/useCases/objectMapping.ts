@@ -36,9 +36,7 @@ const startRecovery = async (
       currentBlockNumber,
     )
     messageSender(JSON.stringify(event))
-    logger.debug(
-      `Sent event for block ${currentBlockNumber}. Waiting ${config.recoveryInterval}ms before next request.`,
-    )
+    logger.debug(`Sent event for block ${currentBlockNumber}.`)
     await new Promise((resolve) => setTimeout(resolve, config.recoveryInterval))
     currentBlockNumber++
   }
