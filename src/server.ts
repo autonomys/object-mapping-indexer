@@ -1,32 +1,30 @@
-import "dotenv/config";
-import express from "express";
-import cors from "cors";
-import { config } from "./config.js";
-import { objectsController } from "./controllers/objects.js";
-import http from "http";
-import { createBroadcastServer } from "./drivers/ws/server.js";
-import { objectMapiingBroadcaster } from "./services/objectMappingBroadcaster.js";
-import { createObjectMappingListener } from "./services/objectMappingListener.js";
+import 'dotenv/config'
+import express from 'express'
+import cors from 'cors'
+import { config } from './config.js'
+import { objectsController } from './controllers/objects.js'
+import { createWsServer } from './drivers/ws/server.js'
+import { rpcServer } from './services/rpcServer/index.js'
+import { createObjectMappingListener } from './services/objectMappingListener/index.js'
 
 const createServer = () => {
-  const app = express();
-  const port = Number(process.env.PORT) || 3000;
+  const app = express()
 
   // Increase the limit to 10MB (adjust as needed)
-  app.use(express.json({ limit: config.requestSizeLimit }));
+  app.use(express.json({ limit: config.requestSizeLimit }))
   app.use(
-    express.urlencoded({ limit: config.requestSizeLimit, extended: true })
-  );
-  config.corsAllowOrigins && app.use(cors({ origin: config.corsAllowOrigins }));
+    express.urlencoded({ limit: config.requestSizeLimit, extended: true }),
+  )
+  config.corsAllowOrigins && app.use(cors({ origin: config.corsAllowOrigins }))
 
-  app.use("/objects", objectsController);
+  app.use('/objects', objectsController)
 
-  return app;
-};
+  return app
+}
 
-const websocketServer = createBroadcastServer(createServer());
+const expressServer = createServer()
+const objectMappingListener = createObjectMappingListener()
+const websocketServer = createWsServer(expressServer)
 
-const objectMappingListener = createObjectMappingListener();
-objectMappingListener.start();
-
-objectMapiingBroadcaster.init(websocketServer);
+objectMappingListener.start()
+rpcServer.init(websocketServer)

@@ -4,7 +4,8 @@ CREATE TABLE blocks (
 );
 CREATE TABLE object_mappings (
     hash TEXT NOT NULL PRIMARY KEY,
-    piece_index INTEGER NOT NULL,
-    piece_offset INTEGER NOT NULL,
-    inserted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    "pieceIndex" INTEGER NOT NULL,
+    "pieceOffset" INTEGER NOT NULL,
+    "blockNumber" BIGINT NOT NULL,
+    "insertedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

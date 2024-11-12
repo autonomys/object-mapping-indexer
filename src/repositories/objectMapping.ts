@@ -1,15 +1,58 @@
-import { getDatabase } from "../drivers/pg.js";
-import { ObjectMapping } from "../models/mapping.js";
-import pgFormat from "pg-format";
+import { getDatabase } from '../drivers/pg.js'
+import pgFormat from 'pg-format'
+
+interface DBObjectMapping {
+  hash: string
+  pieceIndex: number
+  pieceOffset: number
+  blockNumber: number
+}
+
+const saveObjectMappings = async (objectMappings: DBObjectMapping[]) => {
+  const db = await getDatabase()
+  await db.query(
+    pgFormat(
+      'INSERT INTO object_mappings (hash, "pieceIndex", "pieceOffset", "blockNumber") VALUES %L ON CONFLICT DO NOTHING',
+      objectMappings.map(({ hash, pieceIndex, pieceOffset, blockNumber }) => [
+        hash,
+        pieceIndex,
+        pieceOffset,
+        blockNumber,
+      ]),
+    ),
+  )
+}
+
+const getByBlockNumber = async (blockNumber: number) => {
+  const db = await getDatabase()
+
+  const result = await db.query<DBObjectMapping>(
+    'SELECT * FROM object_mappings WHERE "blockNumber" = $1',
+    [blockNumber],
+  )
+
+  return result.rows
+}
+
+const getLatestBlockNumber = async () => {
+  const db = await getDatabase()
+  const result = await db.query<DBObjectMapping>(
+    'SELECT MAX("blockNumber") as "blockNumber" FROM object_mappings',
+  )
+
+  return result.rows[0]
+}
+
+export const getByHash = async (hash: string) => {
+  const db = await getDatabase()
+  const result = await db.query<DBObjectMapping>(
+    'SELECT * FROM object_mappings WHERE hash = $1',
+    [hash],
+  )
+}
 
 export const objectMappingRepository = {
-  saveObjectMappings: async (objectMappings: ObjectMapping[]) => {
-    const db = await getDatabase();
-    await db.query(
-      pgFormat(
-        "INSERT INTO object_mappings (hash, piece_index, piece_offset) VALUES %L ON CONFLICT DO NOTHING",
-        objectMappings
-      )
-    );
-  },
-};
+  saveObjectMappings,
+  getByBlockNumber,
+  getLatestBlockNumber,
+}

@@ -1,80 +1,76 @@
-import Websocket, { server } from "websocket";
-import http from "http";
-import { Message, messageSchema } from "../../models/message.js";
-import { Serializable } from "../../utils/types.js";
-import { config } from "../../config.js";
+import Websocket from 'websocket'
+import { Message, messageSchema } from '../../models/message.js'
+import { config } from '../../config.js'
+import { logger } from '../logger.js'
+import { MessageCallback, WsServer } from './types.js'
+import http from 'http'
 
-export interface BroadcastServer {
-  broadcastMessage: (message: Serializable) => void;
-  onMessage: (callback: (message: Message) => void) => void;
-}
+export const createWsServer = (app: Express.Application): WsServer => {
+  const messageCallbacks: MessageCallback[] = []
 
-export const createBroadcastServer = (
-  app: Express.Application
-): BroadcastServer => {
-  const messageCallbacks: ((message: Message) => void)[] = [];
-
-  const httpServer = http.createServer(app);
+  const httpServer = http.createServer(app)
   const ws = new Websocket.server({
     keepaliveInterval: 10_000,
     keepalive: true,
     httpServer: http.createServer(app),
     autoAcceptConnections: false,
-  });
+  })
 
-  const processMessage = (message: Message) => {
-    messageCallbacks.forEach((callback) => callback(message));
-  };
+  const processMessage = (
+    message: Message,
+    connection: Websocket.connection,
+  ) => {
+    messageCallbacks.forEach((callback) => callback(message, { connection }))
+  }
 
-  ws.on("close", (connection, reason, description) => {
-    console.log(
-      `Connection closed from (${connection.remoteAddress}): ${reason} ${description}`
-    );
-  });
+  ws.on('close', (connection, reason, description) => {
+    logger.debug(
+      `Connection closed from (${connection.remoteAddress}): ${reason} ${description}`,
+    )
+  })
 
-  ws.on("request", (request) => {
-    console.log(`Request from ${request.remoteAddress}`);
-    request.accept();
-  });
+  ws.on('request', (req) => {
+    req.accept()
+  })
 
-  ws.on("connect", (connection) => {
-    connection.on("message", (message) => {
+  ws.on('connect', (connection) => {
+    connection.on('message', (message) => {
       try {
         const parsedMessage =
-          message.type === "utf8"
+          message.type === 'utf8'
             ? JSON.parse(message.utf8Data)
-            : JSON.parse(Buffer.from(message.binaryData).toString("utf-8"));
+            : JSON.parse(Buffer.from(message.binaryData).toString('utf-8'))
 
-        const parsed = messageSchema.safeParse(parsedMessage);
+        const parsed = messageSchema.safeParse(parsedMessage)
         if (!parsed.success) {
-          connection.send(JSON.stringify({ error: "Invalid message" }));
-          return;
+          connection.send(JSON.stringify({ error: 'Invalid message' }))
+          return
         }
 
-        processMessage(parsed.data);
+        processMessage(parsed.data, connection)
       } catch (error) {
-        console.error(error);
+        console.error(error)
       }
-    });
-  });
+    })
+  })
 
-  ws.mount({ httpServer });
+  ws.mount({ httpServer })
 
-  const onMessage = (callback: (message: Message) => void) => {
-    messageCallbacks.push(callback);
-  };
+  const onMessage = (callback: MessageCallback) => {
+    messageCallbacks.push(callback)
+  }
 
   const broadcastMessage = (message: Record<string, unknown>) => {
-    ws.broadcast(JSON.stringify(message));
-  };
+    ws.broadcast(JSON.stringify(message))
+  }
 
-  const port = config.port;
+  const port = config.port
   httpServer.listen(port, () => {
-    console.log(`Websocket server running at ws://localhost:${port}`);
-  });
+    logger.info(`Websocket server running at ws://localhost:${port}`)
+  })
 
   return {
     broadcastMessage,
     onMessage,
-  };
-};
+  }
+}

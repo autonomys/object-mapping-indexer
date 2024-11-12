@@ -1,1 +1,1 @@
-export type Serializable = ReturnType<typeof JSON.parse>;
+export type Serializable = ReturnType<typeof JSON.parse>

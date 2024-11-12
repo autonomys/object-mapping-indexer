@@ -1,62 +1,62 @@
-import { config } from "../config.js";
-import { createWS, WS } from "./ws/client.js";
+import { config } from '../config.js'
+import { createWS, WS } from './ws/client.js'
 
 type SubstrateSubscription = {
-  id: string;
-  callbacks: ((event: any) => void)[];
-};
+  id: string
+  callbacks: ((event: any) => void)[]
+}
 
 type SubstrateEventListenerState = {
-  subscriptions: Record<string, SubstrateSubscription>;
-  ws: WS;
-};
+  subscriptions: Record<string, SubstrateSubscription>
+  ws: WS
+}
 
 type SubscriptionResponse = {
-  result: string;
-};
+  result: string
+}
 
 export const createSubstrateEventListener = () => {
   const state: SubstrateEventListenerState = {
     subscriptions: {},
     ws: createWS(config.rpcUrl),
-  };
+  }
 
   const subscribe = async (
     subscribingEventName: string,
-    callback: (event: any) => void
+    callback: (event: any) => void,
   ) => {
     if (!state.subscriptions[subscribingEventName]) {
       const response: SubscriptionResponse = await state.ws.send({
-        jsonrpc: "2.0",
+        jsonrpc: '2.0',
         method: subscribingEventName,
         params: [],
-      });
+      })
 
-      console.log("response", response);
+      console.log('response', response)
 
       if (!response?.result) {
         throw new Error(
-          `Failed to subscribe to event: ${JSON.stringify(response, null, 2)}`
-        );
+          `Failed to subscribe to event: ${JSON.stringify(response, null, 2)}`,
+        )
       }
 
       state.subscriptions[subscribingEventName] = {
         id: response.result,
         callbacks: [callback],
-      };
+      }
 
       state.ws.on((event) => {
-        const subscription = state.subscriptions[subscribingEventName];
+        const subscription = state.subscriptions[subscribingEventName]
         if (subscription && subscription?.id === event?.params?.subscription) {
           subscription.callbacks.forEach((callback) =>
-            callback(event.params.result)
-          );
+            callback(event.params.result),
+          )
         }
-      });
+      })
     } else {
-      state.subscriptions[subscribingEventName].callbacks.push(callback);
+      state.subscriptions[subscribingEventName].callbacks.push(callback)
     }
-  };
+  }
 
-  return { subscribe };
-};
+  return { subscribe }
+}

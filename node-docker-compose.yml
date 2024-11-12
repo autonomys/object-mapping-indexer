@@ -1,8 +1,8 @@
 volumes:
-  subspace-node-data: {}
+  node-data: {}
 
 services:
-  subspace-node:
+  node:
     image: ghcr.io/autonomys/node:${NODE_DOCKER_TAG}
     volumes:
       - node-data:/var/subspace:rw
@@ -48,10 +48,3 @@ services:
       timeout: 5s
       interval: 30s
       retries: 60
-  object-mapping-node:
-    image: node:${NODE_VERSION:20}
-    command: yarn build && yarn start
-    ports:
-      - '3000:3000'
-    environment:
-      - NODE_ENV=production
