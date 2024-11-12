@@ -6,7 +6,6 @@ import {
 } from '../models/mapping.js'
 import { objectMappingRepository } from '../repositories/objectMapping.js'
 import { rpcServer } from '../services/rpcServer/index.js'
-import WebSocket from 'websocket'
 
 const processObjectMapping = async (event: ObjectMappingListEntry) => {
   await Promise.all([
@@ -37,7 +36,7 @@ const startRecovery = async (
       currentBlockNumber,
     )
     messageSender(JSON.stringify(event))
-    logger.info(
+    logger.debug(
       `Sent event for block ${currentBlockNumber}. Waiting ${config.recoveryInterval}ms before next request.`,
     )
     await new Promise((resolve) => setTimeout(resolve, config.recoveryInterval))
