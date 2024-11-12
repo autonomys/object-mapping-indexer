@@ -1,3 +1,6 @@
+import { createLogger, format, transports } from 'winston'
+import { config } from '../config.js'
+
 export interface Logger {
   info: (message: string) => Promise<void>
   error: (message: string) => Promise<void>
@@ -5,9 +8,26 @@ export interface Logger {
   debug: (message: string) => Promise<void>
 }
 
+const winstonLogger = createLogger({
+  level:
+    (config.logLevel ?? process.env.NODE_ENV === 'production')
+      ? 'info'
+      : 'debug',
+  format: format.combine(format.timestamp(), format.json()),
+  transports: [new transports.Console()],
+})
+
 export const logger: Logger = {
-  info: (message: string) => Promise.resolve(console.log(message)),
-  error: (message: string) => Promise.resolve(console.error(message)),
-  warn: (message: string) => Promise.resolve(console.warn(message)),
-  debug: (message: string) => Promise.resolve(console.debug(message)),
+  info: async (message: string) => {
+    winstonLogger.info(message)
+  },
+  error: async (message: string) => {
+    winstonLogger.error(message)
+  },
+  warn: async (message: string) => {
+    winstonLogger.warn(message)
+  },
+  debug: async (message: string) => {
+    winstonLogger.debug(message)
+  },
 }

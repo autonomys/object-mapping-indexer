@@ -6,4 +6,8 @@ export const config = {
   corsAllowOrigins: env('CORS_ALLOW_ORIGINS', ''),
   rpcUrl: env('RPC_URL'),
   recoveryInterval: notNaN(Number(env('RECOVERY_INTERVAL', '10'))),
+  logLevel: env(
+    'LOG_LEVEL',
+    process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+  ),
 }
