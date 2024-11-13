@@ -38,6 +38,7 @@ services:
         '--sync',
         'full',
         '--create-object-mappings',
+        '${BLOCK_NUMBER_TO_START_FROM}',
       ]
     healthcheck:
       timeout: 5s
