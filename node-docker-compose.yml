@@ -17,7 +17,7 @@ services:
       [
         'run',
         '--chain',
-        'mainnet',
+        '${NETWORK_ID}',
         '--base-path',
         '/var/subspace',
         '--pot-external-entropy',
@@ -42,7 +42,7 @@ services:
         '--sync',
         'full',
         '--create-object-mappings',
-        '0',
+        '${BLOCK_NUMBER_TO_START_FROM}',
       ]
     stop_grace_period: 30s
     healthcheck:
