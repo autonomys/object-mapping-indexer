@@ -1,18 +1,16 @@
 import { config } from '../config.js'
+import { logger } from './logger.js'
 import { createWS, WS } from './ws/client.js'
+import z from 'zod'
 
 type SubstrateSubscription = {
   id: string
-  callbacks: ((event: any) => void)[]
+  callbacks: ((event: unknown) => void)[]
 }
 
 type SubstrateEventListenerState = {
   subscriptions: Record<string, SubstrateSubscription>
   ws: WS
-}
-
-type SubscriptionResponse = {
-  result: string
 }
 
 export const createSubstrateEventListener = () => {
@@ -23,33 +21,52 @@ export const createSubstrateEventListener = () => {
 
   const subscribe = async (
     subscribingEventName: string,
-    callback: (event: any) => void,
+    callback: (event: unknown) => void,
   ) => {
     if (!state.subscriptions[subscribingEventName]) {
-      const response: SubscriptionResponse = await state.ws.send({
+      const response = await state.ws.send({
         jsonrpc: '2.0',
         method: subscribingEventName,
         params: [],
       })
 
-      console.log('response', response)
+      const { data } = z
+        .object({
+          result: z.string(),
+        })
+        .safeParse(response)
 
-      if (!response?.result) {
+      if (!data?.result) {
+        logger.error(
+          `Failed to subscribe to event ${subscribingEventName}. No result field in response.`,
+        )
         throw new Error(
           `Failed to subscribe to event: ${JSON.stringify(response, null, 2)}`,
         )
       }
 
       state.subscriptions[subscribingEventName] = {
-        id: response.result,
+        id: data.result,
         callbacks: [callback],
       }
 
       state.ws.on((event) => {
         const subscription = state.subscriptions[subscribingEventName]
-        if (subscription && subscription?.id === event?.params?.subscription) {
+        const { data } = z
+          .object({
+            params: z.object({
+              subscription: z.string(),
+              result: z.unknown(),
+            }),
+          })
+          .safeParse(event)
+        if (data) {
           subscription.callbacks.forEach((callback) =>
-            callback(event.params.result),
+            callback(data?.params?.result),
+          )
+        } else {
+          logger.debug(
+            `Received event for method ${event.method} (${JSON.stringify(event.params)}).`,
           )
         }
       })

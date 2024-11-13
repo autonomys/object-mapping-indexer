@@ -43,16 +43,19 @@ const getLatestBlockNumber = async () => {
   return result.rows[0]
 }
 
-export const getByHash = async (hash: string) => {
+const getByHash = async (hash: string) => {
   const db = await getDatabase()
   const result = await db.query<DBObjectMapping>(
     'SELECT * FROM object_mappings WHERE hash = $1',
     [hash],
   )
+
+  return result.rows.at(0)
 }
 
 export const objectMappingRepository = {
   saveObjectMappings,
   getByBlockNumber,
   getLatestBlockNumber,
+  getByHash,
 }

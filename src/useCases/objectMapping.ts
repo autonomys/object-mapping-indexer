@@ -6,6 +6,7 @@ import {
 } from '../models/mapping.js'
 import { objectMappingRepository } from '../repositories/objectMapping.js'
 import { rpcServer } from '../services/rpcServer/index.js'
+import { blake3HashFromCid, stringToCid } from '@autonomys/auto-dag-data'
 
 const processObjectMapping = async (event: ObjectMappingListEntry) => {
   await Promise.all([
@@ -27,6 +28,9 @@ const startRecovery = async (
   finalBlockNumber: number,
   messageSender: (message: string) => void,
 ) => {
+  logger.info(
+    `Starting recovery from block ${initialBlockNumber} to ${finalBlockNumber}.`,
+  )
   let currentBlockNumber = initialBlockNumber
   while (currentBlockNumber <= finalBlockNumber) {
     const objectMappings =
@@ -57,7 +61,22 @@ const recoverObjectMappings = async (
   return latestBlockNumber
 }
 
+const getObject = async (cid: string) => {
+  const hash = Buffer.from(blake3HashFromCid(stringToCid(cid))).toString('hex')
+  const objectMapping = await objectMappingRepository.getByHash(hash)
+
+  return objectMapping
+}
+
+const getObjectByBlock = async (blockNumber: number) => {
+  const objectMappings =
+    await objectMappingRepository.getByBlockNumber(blockNumber)
+  return objectMappings.map((e) => e.hash)
+}
+
 export const objectMappingUseCase = {
   processObjectMapping,
   recoverObjectMappings,
+  getObject,
+  getObjectByBlock,
 }

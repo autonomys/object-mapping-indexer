@@ -3,23 +3,23 @@ import Websocket from 'websocket'
 type RPCMessage = {
   jsonrpc: string
   method: string
-  params: any
+  params: unknown
   id: number
 }
 
 export type WS = {
-  send: (message: Omit<RPCMessage, 'id'>) => Promise<any>
+  send: (message: Omit<RPCMessage, 'id'>) => Promise<unknown>
   on: (callback: (event: RPCMessage) => void) => void
   off: (callback: (event: RPCMessage) => void) => void
 }
 
 export const createWS = (endpoint: string): WS => {
-  let ws = new Websocket.w3cwebsocket(endpoint)
+  const ws = new Websocket.w3cwebsocket(endpoint)
   let onMessageCallbacks: ((event: RPCMessage) => void)[] = []
-  let connected: Promise<true> = new Promise((resolve) => {
+  const connected: Promise<void> = new Promise((resolve) => {
     ws.onopen = () => {
       console.log(`Connected to WebSocket (${endpoint})`)
-      resolve(true)
+      resolve()
     }
   })
 

@@ -14,12 +14,25 @@ objectsController.get('/:cid', async (req, res) => {
     return
   }
 
-  //@ts-ignore
-  const object = await getObject(cid) // TODO: Implement
+  const object = await objectMappingUseCase.getObject(cid)
 
   res.json(object)
 
   return
+})
+
+objectsController.get('/by-block/:blockNumber', async (req, res) => {
+  const { blockNumber } = req.params
+
+  const parsedBlockNumber = parseInt(blockNumber)
+  if (!blockNumber || isNaN(parsedBlockNumber)) {
+    res.status(400).json({ error: 'Missing or invalid blockNumber' })
+    return
+  }
+
+  const objects = await objectMappingUseCase.getObjectByBlock(parsedBlockNumber)
+
+  res.json(objects)
 })
 
 rpcServer.addRpcHandler({

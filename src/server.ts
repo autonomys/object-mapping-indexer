@@ -15,7 +15,9 @@ const createServer = () => {
   app.use(
     express.urlencoded({ limit: config.requestSizeLimit, extended: true }),
   )
-  config.corsAllowOrigins && app.use(cors({ origin: config.corsAllowOrigins }))
+  if (config.corsAllowOrigins) {
+    app.use(cors({ origin: config.corsAllowOrigins }))
+  }
 
   app.use('/objects', objectsController)
 
