@@ -5,7 +5,7 @@ services:
   subspace-node:
     image: ghcr.io/autonomys/node:${NODE_DOCKER_TAG}
     volumes:
-      - node-data:/var/subspace:rw
+      - subspace-node-data:/var/subspace:rw
     ports:
       - '30333:30333'
       - '30433:30433'
@@ -47,10 +47,19 @@ services:
       interval: 30s
       retries: 60
     stop_grace_period: 30s
-  object-mapping-node:
+  object-mapping-app:
     image: node:20
-    command: yarn build && yarn start
+    container_name: object-mapping-app
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
     ports:
       - '3000:3000'
     environment:
       - NODE_ENV=production
+      - RPC_URL=ws://subspace-node:9944
+    entrypoint: ['bash', './start-server.sh']
+    depends_on:
+      subspace-node:
+        condition: service_healthy
+    restart: unless-stopped

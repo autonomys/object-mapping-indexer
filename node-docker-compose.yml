@@ -9,9 +9,7 @@ services:
     ports:
       - '30333:30333'
       - '30433:30433'
-      - '9933:9933'
       - '9944:9944'
-      - '443:443'
     restart: unless-stopped
     command:
       [
