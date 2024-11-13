@@ -49,7 +49,7 @@ services:
       interval: 30s
       retries: 60
   object-mapping-node:
-    image: node:${NODE_VERSION:20}
+    image: node:20
     command: yarn build && yarn start
     ports:
       - '3000:3000'
