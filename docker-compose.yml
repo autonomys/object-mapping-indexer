@@ -55,7 +55,6 @@ services:
       - '3000:3000'
     environment:
       - NODE_ENV=production
-      - RPC_URL=ws://subspace-node:9944
     entrypoint: ['bash', './start-server.sh']
     depends_on:
       subspace-node:
