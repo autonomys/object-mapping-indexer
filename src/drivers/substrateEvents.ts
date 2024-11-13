@@ -45,35 +45,52 @@ export const createSubstrateEventListener = () => {
         )
       }
 
+      logger.info(
+        `Subscribed to event ${subscribingEventName} with id ${data.result}.`,
+      )
       state.subscriptions[subscribingEventName] = {
         id: data.result,
         callbacks: [callback],
       }
-
-      state.ws.on((event) => {
-        const subscription = state.subscriptions[subscribingEventName]
-        const { data } = z
-          .object({
-            params: z.object({
-              subscription: z.string(),
-              result: z.unknown(),
-            }),
-          })
-          .safeParse(event)
-        if (data) {
-          subscription.callbacks.forEach((callback) =>
-            callback(data?.params?.result),
-          )
-        } else {
-          logger.debug(
-            `Received event for method ${event.method} (${JSON.stringify(event.params)}).`,
-          )
-        }
-      })
     } else {
       state.subscriptions[subscribingEventName].callbacks.push(callback)
     }
   }
+
+  state.ws.on((event) => {
+    logger.debug(
+      `Received event for method ${event.method} (${JSON.stringify(event.params)}).`,
+    )
+
+    const { data, success } = z
+      .object({
+        params: z.object({
+          subscription: z.string(),
+          result: z.unknown(),
+        }),
+      })
+      .safeParse(event)
+
+    if (!success) {
+      logger.warn(
+        `Received event for method ${event.method} but failed to parse.`,
+      )
+      return
+    }
+
+    const subscription = Object.values(state.subscriptions).find(
+      (subscription) => subscription.id === data.params.subscription,
+    )
+
+    if (!subscription) {
+      logger.debug(
+        `Received event for method ${event.method} but no subscription found.`,
+      )
+      return
+    }
+
+    subscription.callbacks.forEach((callback) => callback(data.params.result))
+  })
 
   return { subscribe }
 }

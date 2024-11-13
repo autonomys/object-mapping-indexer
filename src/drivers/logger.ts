@@ -9,10 +9,7 @@ export interface Logger {
 }
 
 const winstonLogger = createLogger({
-  level:
-    (config.logLevel ?? process.env.NODE_ENV === 'production')
-      ? 'info'
-      : 'debug',
+  level: config.logLevel,
   format: format.combine(format.timestamp(), format.json()),
   transports: [new transports.Console()],
 })

@@ -21,7 +21,6 @@ export const createObjectMappingListener = (): ObjectMappingListener => {
       const substrateListener = createSubstrateEventListener()
 
       for (const [event, handler] of Object.entries(events)) {
-        logger.info(`Subscribing to event ${event}`)
         substrateListener.subscribe(event, handler)
       }
     },

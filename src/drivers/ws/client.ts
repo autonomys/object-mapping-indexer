@@ -1,4 +1,5 @@
 import Websocket from 'websocket'
+import { logger } from '../logger.js'
 
 type RPCMessage = {
   jsonrpc: string
@@ -14,11 +15,47 @@ export type WS = {
 }
 
 export const createWS = (endpoint: string): WS => {
-  const ws = new Websocket.w3cwebsocket(endpoint)
+  let ws: Websocket.w3cwebsocket
   let onMessageCallbacks: ((event: RPCMessage) => void)[] = []
+
+  const handleConnection = () => {
+    ws = new Websocket.w3cwebsocket(endpoint)
+
+    ws.onerror = (event) => {
+      const errorDetails = {
+        readyState: ws.readyState,
+        url: endpoint,
+        message: event.message || 'Unknown error',
+      }
+      logger.error(
+        `WebSocket connection error: ${JSON.stringify(errorDetails)}`,
+      )
+
+      setTimeout(() => {
+        logger.info(`Reconnecting to RPC Web Socket (${endpoint})`)
+        handleConnection()
+      }, 10_000)
+    }
+
+    ws.onmessage = (event) => {
+      logger.debug(`Received message from WebSocket (${endpoint})`)
+      onMessageCallbacks.forEach((callback) =>
+        callback(JSON.parse(event.data.toString())),
+      )
+    }
+
+    ws.onclose = (event) => {
+      logger.info(
+        `WebSocket connection closed (${event.code}) due to ${event.reason}.`,
+      )
+    }
+  }
+
+  handleConnection()
+
   const connected: Promise<void> = new Promise((resolve) => {
     ws.onopen = () => {
-      console.log(`Connected to WebSocket (${endpoint})`)
+      logger.info(`Connected to RPC Web Socket (${endpoint})`)
       resolve()
     }
   })
@@ -46,26 +83,11 @@ export const createWS = (endpoint: string): WS => {
     })
   }
 
-  ws.onmessage = (event) => {
-    onMessageCallbacks.forEach((callback) =>
-      callback(JSON.parse(event.data.toString())),
-    )
-  }
-
   const on = (callback: (event: RPCMessage) => void) => {
     onMessageCallbacks.push(callback)
   }
   const off = (callback: (event: RPCMessage) => void) => {
     onMessageCallbacks = onMessageCallbacks.filter((cb) => cb !== callback)
-  }
-
-  ws.onerror = (event) => {
-    const errorDetails = {
-      readyState: ws.readyState,
-      url: endpoint,
-      message: event.message || 'Unknown error',
-    }
-    console.error('WebSocket connection error:', errorDetails)
   }
 
   return { send, on, off }
