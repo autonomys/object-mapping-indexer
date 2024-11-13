@@ -1,7 +1,6 @@
-import { WsServer } from '../../drivers/ws/types.js'
-import { ObjectMappingListEntry } from '../../models/mapping.js'
+import { WsServer } from '../ws/types.js'
 import { RpcHandler } from './types.js'
-import { logger } from '../../drivers/logger.js'
+import { logger } from '../logger.js'
 
 const serverState: {
   wsServer: WsServer | null
@@ -28,21 +27,11 @@ const init = (broadcastServer: WsServer) => {
   })
 }
 
-export const broadcast = (objectMapping: ObjectMappingListEntry) => {
-  if (!serverState.wsServer) {
-    throw new Error('Object mapping broadcaster not initialized')
-  }
-
-  logger.debug(`Broadcasting object mapping: ${JSON.stringify(objectMapping)}`)
-  serverState.wsServer.broadcastMessage(objectMapping)
-}
-
 export const addRpcHandler = (handler: RpcHandler) => {
   serverState.handlers.push(handler)
 }
 
 export const rpcServer = {
   init,
-  broadcast,
   addRpcHandler,
 }

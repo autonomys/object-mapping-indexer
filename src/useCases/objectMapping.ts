@@ -1,12 +1,13 @@
 import { config } from '../config.js'
+import { v4 } from 'uuid'
 import { logger } from '../drivers/logger.js'
 import {
   constructListFromObjectMapping,
   ObjectMappingListEntry,
 } from '../models/mapping.js'
 import { objectMappingRepository } from '../repositories/objectMapping.js'
-import { rpcServer } from '../services/rpcServer/index.js'
 import { blake3HashFromCid, stringToCid } from '@autonomys/auto-dag-data'
+import { objectMappingRouter } from '../services/objectMappingRouter/index.js'
 
 const processObjectMapping = async (event: ObjectMappingListEntry) => {
   await Promise.all([
@@ -20,10 +21,11 @@ const processObjectMapping = async (event: ObjectMappingListEntry) => {
     ),
   ])
 
-  rpcServer.broadcast(event)
+  objectMappingRouter.emitObjectMappings(event)
 }
 
 const startRecovery = async (
+  id: string,
   initialBlockNumber: number,
   finalBlockNumber: number,
   messageSender: (message: string) => void,
@@ -39,7 +41,7 @@ const startRecovery = async (
       objectMappings.map((e) => [e.hash, e.pieceIndex, e.pieceOffset]),
       currentBlockNumber,
     )
-    messageSender(JSON.stringify(event))
+    messageSender(JSON.stringify({ subscriptionId: id, event }))
     logger.debug(`Sent event for block ${currentBlockNumber}.`)
     await new Promise((resolve) => setTimeout(resolve, config.recoveryInterval))
     currentBlockNumber++
@@ -47,18 +49,20 @@ const startRecovery = async (
 }
 
 const recoverObjectMappings = async (
+  subscriptionId: string,
   initialBlockNumber: number,
   messageSender: (message: string) => void,
 ) => {
   const latestBlockNumber = await objectMappingRepository.getLatestBlockNumber()
 
   startRecovery(
+    subscriptionId,
     initialBlockNumber,
     latestBlockNumber.blockNumber,
     messageSender,
   )
 
-  return latestBlockNumber
+  return subscriptionId
 }
 
 const getObject = async (cid: string) => {
@@ -69,9 +73,7 @@ const getObject = async (cid: string) => {
 }
 
 const getObjectByBlock = async (blockNumber: number) => {
-  const objectMappings =
-    await objectMappingRepository.getByBlockNumber(blockNumber)
-  return objectMappings.map((e) => e.hash)
+  return objectMappingRepository.getByBlockNumber(blockNumber)
 }
 
 export const objectMappingUseCase = {

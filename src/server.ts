@@ -4,7 +4,7 @@ import cors from 'cors'
 import { config } from './config.js'
 import { objectsController } from './controllers/objects.js'
 import { createWsServer } from './drivers/ws/server.js'
-import { rpcServer } from './services/rpcServer/index.js'
+import { rpcServer } from './drivers/rpcServer/index.js'
 import { createObjectMappingListener } from './services/objectMappingListener/index.js'
 
 const createServer = () => {

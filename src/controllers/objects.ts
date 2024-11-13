@@ -1,8 +1,8 @@
 import express from 'express'
-import { rpcServer } from '../services/rpcServer/index.js'
+import { rpcServer } from '../drivers/rpcServer/index.js'
 import { objectMappingUseCase } from '../useCases/objectMapping.js'
 import z from 'zod'
-import { logger } from '../drivers/logger.js'
+import { objectMappingRouter } from '../services/objectMappingRouter/index.js'
 
 export const objectsController = express.Router()
 
@@ -36,21 +36,130 @@ objectsController.get('/by-block/:blockNumber', async (req, res) => {
 })
 
 rpcServer.addRpcHandler({
-  method: 'recover_object_mappings',
+  method: 'subscribe_object_mappings',
   handler: async (params, { connection, messageId }) => {
     const { data } = z.object({ blockNumber: z.number() }).safeParse(params)
     if (!data) {
-      connection.sendUTF(JSON.stringify({ error: 'Missing blockNumber' }))
+      connection.sendUTF(
+        JSON.stringify({
+          error: 'Missing blockNumber',
+          success: false,
+          id: messageId,
+        }),
+      )
       return
     }
 
-    await objectMappingUseCase.recoverObjectMappings(
-      data.blockNumber,
-      (message) => connection.sendUTF(message),
-    )
+    try {
+      const subscriptionId =
+        objectMappingRouter.subscribeObjectMappings(connection)
 
-    connection.sendUTF(JSON.stringify({ success: true, id: messageId }))
+      connection.sendUTF(
+        JSON.stringify({ success: true, id: messageId, subscriptionId }),
+      )
+    } catch (error) {
+      connection.sendUTF(
+        JSON.stringify({
+          error: 'Failed to subscribe to object mappings',
+          success: false,
+          id: messageId,
+        }),
+      )
+    }
   },
 })
 
-logger.info('Object controller initialized')
+rpcServer.addRpcHandler({
+  method: 'unsubscribe_object_mappings',
+  handler: async (params, { connection, messageId }) => {
+    const { data } = z.object({ subscriptionId: z.string() }).safeParse(params)
+    if (!data) {
+      connection.sendUTF(
+        JSON.stringify({
+          error: 'Missing subscriptionId',
+          success: false,
+          id: messageId,
+        }),
+      )
+      return
+    }
+
+    try {
+      objectMappingRouter.unsubscribeObjectMappings(data.subscriptionId)
+      connection.sendUTF(JSON.stringify({ success: true, id: messageId }))
+    } catch (error) {
+      connection.sendUTF(
+        JSON.stringify({
+          error: 'Invalid subscriptionId',
+          success: false,
+          id: messageId,
+        }),
+      )
+    }
+  },
+})
+
+rpcServer.addRpcHandler({
+  method: 'subscribe_recover_object_mappings',
+  handler: async (params, { connection, messageId }) => {
+    const { data } = z.object({ blockNumber: z.number() }).safeParse(params)
+    if (!data) {
+      connection.sendUTF(
+        JSON.stringify({
+          error: 'Missing blockNumber',
+          success: false,
+          id: messageId,
+        }),
+      )
+      return
+    }
+    try {
+      const subscriptionId = objectMappingRouter.subscribeRecoverObjectMappings(
+        connection,
+        data.blockNumber,
+      )
+
+      connection.sendUTF(
+        JSON.stringify({ success: true, id: messageId, subscriptionId }),
+      )
+    } catch (error) {
+      connection.sendUTF(
+        JSON.stringify({
+          error: 'Failed to subscribe to recover object mappings',
+          success: false,
+          id: messageId,
+        }),
+      )
+    }
+  },
+})
+
+rpcServer.addRpcHandler({
+  method: 'unsubscribe_recover_object_mappings',
+  handler: async (params, { connection, messageId }) => {
+    const { data } = z.object({ subscriptionId: z.string() }).safeParse(params)
+    if (!data) {
+      connection.sendUTF(
+        JSON.stringify({
+          error: 'Missing subscriptionId',
+          success: false,
+          id: messageId,
+        }),
+      )
+      return
+    }
+
+    try {
+      objectMappingRouter.unsubscribeRecoverObjectMappings(data.subscriptionId)
+      connection.sendUTF(JSON.stringify({ success: true, id: messageId }))
+    } catch (error) {
+      connection.sendUTF(
+        JSON.stringify({
+          error: 'Invalid subscriptionId',
+          success: false,
+          id: messageId,
+        }),
+      )
+    }
+  },
+})
