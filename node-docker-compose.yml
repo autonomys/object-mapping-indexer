@@ -37,8 +37,7 @@ services:
         'object-mapping-node',
         '--sync',
         'full',
-        '--create-object-mappings',
-        '${BLOCK_NUMBER_TO_START_FROM}',
+        '--create-object-mappings'
       ]
     stop_grace_period: 30s
     healthcheck:
