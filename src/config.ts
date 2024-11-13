@@ -10,4 +10,5 @@ export const config = {
     'LOG_LEVEL',
     process.env.NODE_ENV === 'production' ? 'info' : 'debug',
   ),
+  databaseUrl: env('DATABASE_URL'),
 }
