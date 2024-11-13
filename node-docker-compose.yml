@@ -44,6 +44,7 @@ services:
         '--create-object-mappings',
         '0',
       ]
+    stop_grace_period: 30s
     healthcheck:
       timeout: 5s
       interval: 30s

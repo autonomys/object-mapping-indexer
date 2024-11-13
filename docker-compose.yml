@@ -48,6 +48,7 @@ services:
       timeout: 5s
       interval: 30s
       retries: 60
+    stop_grace_period: 30s
   object-mapping-node:
     image: node:20
     command: yarn build && yarn start
