@@ -41,12 +41,22 @@ const unsubscribeObjectMappings = (subscriptionId: string) => {
 const emitObjectMappings = (event: ObjectMappingListEntry) => {
   Array.from(state.objectMappingsSubscriptions.entries()).forEach(
     ([subscriptionId, connection]) => {
-      connection.sendUTF(
-        JSON.stringify({
-          subscriptionId,
-          result: event,
-        }),
-      )
+      if (connection.socket.readyState === 'open') {
+        connection.sendUTF(
+          JSON.stringify({
+            subscriptionId,
+            result: event,
+          }),
+        )
+      } else {
+        logger.warn(
+          `IP (${connection.remoteAddress}) object mappings subscription ${subscriptionId} socket is ${connection.socket.readyState}`,
+        )
+        logger.debug(
+          `Removing subscription ${subscriptionId} from object mappings`,
+        )
+        state.objectMappingsSubscriptions.delete(subscriptionId)
+      }
     },
   )
 }
