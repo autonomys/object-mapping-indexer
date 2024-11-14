@@ -11,35 +11,21 @@ services:
       - '30433:30433'
       - '9944:9944'
     restart: unless-stopped
-    command:
-      [
-        'run',
-        '--chain',
-        '${NETWORK_ID}',
-        '--base-path',
-        '/var/subspace',
-        '--listen-on',
-        '/ip4/0.0.0.0/tcp/30333',
-        '--dsn-listen-on',
-        '/ip4/0.0.0.0/tcp/30433',
-        '--rpc-cors',
-        'all',
-        '--rpc-methods',
-        'unsafe',
-        '--rpc-listen-on',
-        '0.0.0.0:9944',
-        '--rpc-max-subscriptions-per-connection',
-        '1000',
-        '--rpc-max-connections',
-        '20000',
-        '--farmer',
-        '--name',
-        'object-mapping-node',
-        '--sync',
-        'full',
-        '--create-object-mappings',
-        '${BLOCK_NUMBER_TO_START_FROM}',
-      ]
+    command: >
+      run
+      --chain ${NETWORK_ID}
+      --base-path /var/subspace
+      --listen-on /ip4/0.0.0.0/tcp/30333
+      --dsn-listen-on /ip4/0.0.0.0/tcp/30433
+      --rpc-cors all
+      --rpc-methods unsafe
+      --rpc-listen-on 0.0.0.0:9944
+      --rpc-max-subscriptions-per-connection 1000
+      --rpc-max-connections 20000
+      --farmer
+      --name object-mapping-node
+      --sync full
+      --create-object-mappings${BLOCK_NUMBER_TO_START_FROM:+ ${BLOCK_NUMBER_TO_START_FROM}}
     stop_grace_period: 30s
     healthcheck:
       timeout: 5s
