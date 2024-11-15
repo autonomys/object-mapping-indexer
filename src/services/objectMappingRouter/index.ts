@@ -14,15 +14,19 @@ type RouterState = {
     string,
     { connection: Websocket.connection; blockNumber: number }
   >
+  lastRealtimeBlockNumber: number
 }
 
 const state: RouterState = {
   objectMappingsSubscriptions: new Map(),
   recoverObjectMappingsSubscriptions: new Map(),
+  lastRealtimeBlockNumber: 0,
 }
 
-const subscribeObjectMappings = (connection: Websocket.connection) => {
-  const subscriptionId = v4()
+const subscribeObjectMappings = (
+  connection: Websocket.connection,
+  subscriptionId: string = v4(),
+) => {
   logger.info(`IP (${connection.remoteAddress}) subscribing to object mappings`)
   state.objectMappingsSubscriptions.set(subscriptionId, connection)
   return subscriptionId
@@ -39,6 +43,7 @@ const unsubscribeObjectMappings = (subscriptionId: string) => {
 }
 
 const emitObjectMappings = (event: ObjectMappingListEntry) => {
+  state.lastRealtimeBlockNumber = event.blockNumber
   Array.from(state.objectMappingsSubscriptions.entries()).forEach(
     ([subscriptionId, connection]) => {
       if (connection.socket.readyState === 'open') {
@@ -108,6 +113,12 @@ const emitRecoverObjectMappings = async () => {
         objectMappings.map((e) => [e.hash, e.pieceIndex, e.pieceOffset]),
         blockNumber,
       )
+
+      if (blockNumber >= state.lastRealtimeBlockNumber) {
+        unsubscribeRecoverObjectMappings(subscriptionId)
+        subscribeObjectMappings(connection, subscriptionId)
+      }
+
       connection.sendUTF(JSON.stringify({ subscriptionId, result }))
     },
   )

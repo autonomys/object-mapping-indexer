@@ -9,7 +9,7 @@ services:
     ports:
       - '30333:30333'
       - '30433:30433'
-      - '9944:9944'
+      - '127.0.0.1:9944:9944'
     restart: unless-stopped
     command: >
       run
@@ -22,7 +22,6 @@ services:
       --rpc-listen-on 0.0.0.0:9944
       --rpc-max-subscriptions-per-connection 1000
       --rpc-max-connections 20000
-      --farmer
       --name object-mapping-node
       --sync full
       --create-object-mappings${BLOCK_NUMBER_TO_START_FROM:+ ${BLOCK_NUMBER_TO_START_FROM}}

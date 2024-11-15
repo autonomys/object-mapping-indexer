@@ -57,7 +57,7 @@ rpcServer.addRpcHandler({
       connection.sendUTF(
         JSON.stringify({ success: true, id: messageId, subscriptionId }),
       )
-    } catch (error) {
+    } catch {
       connection.sendUTF(
         JSON.stringify({
           error: 'Failed to subscribe to object mappings',
@@ -87,7 +87,7 @@ rpcServer.addRpcHandler({
     try {
       objectMappingRouter.unsubscribeObjectMappings(data.subscriptionId)
       connection.sendUTF(JSON.stringify({ success: true, id: messageId }))
-    } catch (error) {
+    } catch {
       connection.sendUTF(
         JSON.stringify({
           error: 'Invalid subscriptionId',
@@ -122,7 +122,7 @@ rpcServer.addRpcHandler({
       connection.sendUTF(
         JSON.stringify({ success: true, id: messageId, subscriptionId }),
       )
-    } catch (error) {
+    } catch {
       connection.sendUTF(
         JSON.stringify({
           error: 'Failed to subscribe to recover object mappings',
@@ -152,7 +152,7 @@ rpcServer.addRpcHandler({
     try {
       objectMappingRouter.unsubscribeRecoverObjectMappings(data.subscriptionId)
       connection.sendUTF(JSON.stringify({ success: true, id: messageId }))
-    } catch (error) {
+    } catch {
       connection.sendUTF(
         JSON.stringify({
           error: 'Invalid subscriptionId',
