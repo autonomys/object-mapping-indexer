@@ -7,6 +7,7 @@ import {
 import { objectMappingUseCase } from '../../useCases/objectMapping.js'
 import { config } from '../../config.js'
 import { logger } from '../../drivers/logger.js'
+import { objectMappingRepository } from '../../repositories/objectMapping.js'
 
 type RouterState = {
   objectMappingsSubscriptions: Map<string, Websocket.connection>
@@ -21,6 +22,11 @@ const state: RouterState = {
   objectMappingsSubscriptions: new Map(),
   recoverObjectMappingsSubscriptions: new Map(),
   lastRealtimeBlockNumber: 0,
+}
+
+const init = async () => {
+  const latestBlockNumber = await objectMappingRepository.getLatestBlockNumber()
+  state.lastRealtimeBlockNumber = latestBlockNumber.blockNumber
 }
 
 const subscribeObjectMappings = (
@@ -139,4 +145,7 @@ export const objectMappingRouter = {
   emitObjectMappings,
   subscribeRecoverObjectMappings,
   unsubscribeRecoverObjectMappings,
+  init,
 }
+
+setTimeout(init, 1000)
