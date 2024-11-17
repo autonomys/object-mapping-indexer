@@ -76,7 +76,7 @@ const subscribeRecoverObjectMappings = (
   const subscriptionId = v4()
   state.recoverObjectMappingsSubscriptions.set(subscriptionId, {
     connection,
-    blockNumber,
+    blockNumber: blockNumber - 1,
   })
 
   return subscriptionId
