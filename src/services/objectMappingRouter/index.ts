@@ -66,7 +66,7 @@ const emitObjectMappings = (event: ObjectMappingListEntry) => {
         logger.debug(
           `Removing subscription ${subscriptionId} from object mappings`,
         )
-        state.objectMappingsSubscriptions.delete(subscriptionId)
+        unsubscribeObjectMappings(subscriptionId)
       }
     },
   )
