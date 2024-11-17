@@ -137,8 +137,6 @@ const recoveryLoop = async () => {
   setTimeout(recoveryLoop, config.recoveryInterval)
 }
 
-setTimeout(recoveryLoop)
-
 export const objectMappingRouter = {
   subscribeObjectMappings,
   unsubscribeObjectMappings,
@@ -149,3 +147,4 @@ export const objectMappingRouter = {
 }
 
 setTimeout(init, 1000)
+setTimeout(recoveryLoop)
