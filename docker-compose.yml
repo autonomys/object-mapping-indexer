@@ -1,5 +1,6 @@
 volumes:
   subspace-node-data: {}
+  postgres-data: {}
 
 services:
   subspace-node:
@@ -40,8 +41,21 @@ services:
       - '3000:3000'
     environment:
       - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
+      - RPC_URL=ws://subspace-node:9944/ws
     entrypoint: ['bash', './start-server.sh']
     depends_on:
       subspace-node:
         condition: service_healthy
     restart: unless-stopped
+  postgres:
+    image: postgres:latest
+    container_name: object-mapping-postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
