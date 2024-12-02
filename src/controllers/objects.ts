@@ -6,15 +6,15 @@ import { objectMappingRouter } from '../services/objectMappingRouter/index.js'
 
 export const objectsController = express.Router()
 
-objectsController.get('/:cid', async (req, res) => {
-  const { cid } = req.params
+objectsController.get('/:hash', async (req, res) => {
+  const { hash } = req.params
 
-  if (!cid) {
-    res.status(400).json({ error: 'Missing cid' })
+  if (!hash) {
+    res.status(400).json({ error: 'Missing hash' })
     return
   }
 
-  const object = await objectMappingUseCase.getObject(cid)
+  const object = await objectMappingUseCase.getObject(hash)
 
   res.json(object)
 

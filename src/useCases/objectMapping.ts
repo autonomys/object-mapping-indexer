@@ -1,6 +1,5 @@
 import { ObjectMappingListEntry } from '../models/mapping.js'
 import { objectMappingRepository } from '../repositories/objectMapping.js'
-import { blake3HashFromCid, stringToCid } from '@autonomys/auto-dag-data'
 import { objectMappingRouter } from '../services/objectMappingRouter/index.js'
 
 const processObjectMapping = async (event: ObjectMappingListEntry) => {
@@ -18,8 +17,7 @@ const processObjectMapping = async (event: ObjectMappingListEntry) => {
   objectMappingRouter.emitObjectMappings(event)
 }
 
-const getObject = async (cid: string) => {
-  const hash = Buffer.from(blake3HashFromCid(stringToCid(cid))).toString('hex')
+const getObject = async (hash: string) => {
   const objectMapping = await objectMappingRepository.getByHash(hash)
 
   return objectMapping
