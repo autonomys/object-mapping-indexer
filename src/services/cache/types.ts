@@ -1,5 +1,5 @@
 export interface BaseCacheConfig {
-  estimatedTotalSize: number
+  targetFilesCount: number
   cacheDir: string
   maxFilesPerDirectory: number
 }
