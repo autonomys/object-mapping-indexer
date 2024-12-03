@@ -30,15 +30,14 @@ export const createFileCache = (config: CacheConfig) => {
   const controller = getControllerFromConfig(config)
 
   const get = async (cid: string) => {
-    const stats = await fsPromises.stat(cidToFilePath(cid)).catch(() => null)
+    const filePath = cidToFilePath(cid)
 
+    const stats = await fsPromises.stat(filePath).catch(() => null)
     if (!stats) {
       return null
     }
 
-    const stream = fs.createReadStream(
-      path.join(config.cacheDir, cidToFilePath(cid)),
-    )
+    const stream = fs.createReadStream(filePath)
 
     await controller.handleGet(cache, cid)
     return stream
