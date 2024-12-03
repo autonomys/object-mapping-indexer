@@ -40,6 +40,7 @@ export const createFileCache = (config: CacheConfig) => {
     const filePath = cidToFilePath(cid)
     const tempFilePath = `${filePath}.tmp`
 
+    await fsPromises.mkdir(path.dirname(tempFilePath), { recursive: true })
     await fsPromises.writeFile(tempFilePath, data)
     await fsPromises.rename(tempFilePath, filePath)
   }
