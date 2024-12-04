@@ -31,7 +31,7 @@ export const createFileCache = (config: CacheConfig) => {
 
   const get = async (cid: string) => {
     const filePath = cidToFilePath(cid)
-
+    
     const stats = await fsPromises.stat(filePath).catch(() => null)
     if (!stats) {
       return null
