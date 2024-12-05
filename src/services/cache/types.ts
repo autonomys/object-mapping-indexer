@@ -1,18 +1,11 @@
 import { Stream } from 'stream'
-import { CacheControllerConfig } from './controllers'
-
+import { Keyv } from 'keyv'
 export interface BaseCacheConfig {
   targetFilesCount: number
   cacheDir: string
   maxFilesPerDirectory: number
+  stores: Keyv[]
 }
-
-export interface LRUCacheConfig extends BaseCacheConfig {
-  controller: 'lru'
-  maxFiles: number
-}
-
-export type CacheConfig = BaseCacheConfig & CacheControllerConfig
 
 export interface FileCache {
   get: (cid: string) => Promise<Buffer | Stream | null>

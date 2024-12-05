@@ -1,14 +1,23 @@
-import { CacheConfig } from './types'
 import fsPromises from 'fs/promises'
 import { Stream } from 'stream'
 import fs from 'fs'
 import path from 'path'
-import { getControllerFromConfig } from './controllers/index.js'
+import { createCache } from 'cache-manager'
+import { writeFile } from '../../utils/fs'
+import { BaseCacheConfig } from './types'
+import { logger } from '../../drivers/logger'
 
 const BASE_64_BASE = 64
 const CHARS_PER_PARTITION = 2
 
-export const createFileCache = (config: CacheConfig) => {
+type FileCacheEntry = {
+  path: string
+  size: number
+}
+
+type UncheckedFileCacheEntry = FileCacheEntry | null | undefined
+
+export const createFileCache = (config: BaseCacheConfig) => {
   const cidToFilePath = (cid: string) => {
     const partitions = Math.ceil(
       Math.log(config.targetFilesCount / config.maxFilesPerDirectory) /
@@ -27,36 +36,45 @@ export const createFileCache = (config: CacheConfig) => {
     return path.join(config.cacheDir, filePath)
   }
 
-  const controller = getControllerFromConfig(config)
+  const filepathCache = createCache({
+    stores: config.stores,
+  })
 
-  const get = async (cid: string) => {
-    const filePath = cidToFilePath(cid)
-    
-    const stats = await fsPromises.stat(filePath).catch(() => null)
-    if (!stats) {
+  const get = async (cid: string): Promise<fs.ReadStream | null> => {
+    const data: UncheckedFileCacheEntry = await filepathCache.get(cid)
+    if (!data) {
       return null
     }
 
-    const stream = fs.createReadStream(filePath)
-
-    await controller.handleGet(cache, cid)
-    return stream
+    return fs.createReadStream(data.path)
   }
 
   const set = async (cid: string, data: Buffer | Stream) => {
     const filePath = cidToFilePath(cid)
-    const tempFilePath = `${filePath}.tmp`
 
-    await fsPromises.mkdir(path.dirname(tempFilePath), { recursive: true })
-    await fsPromises.writeFile(tempFilePath, data)
-    await fsPromises.rename(tempFilePath, filePath)
+    const cachePromise = filepathCache.set(cid, {
+      path: filePath,
+    })
 
-    await controller.handleSet(cache, cid)
+    await Promise.all([cachePromise, writeFile(filePath, data)])
   }
 
   const remove = async (cid: string) => {
-    await fsPromises.rm(cidToFilePath(cid))
+    const data: UncheckedFileCacheEntry = await filepathCache.get(cid)
+    if (!data) {
+      return
+    }
+
+    await Promise.all([filepathCache.del(cid), fsPromises.rm(data.path)])
   }
+
+  filepathCache.on('del', async ({ key, error }) => {
+    if (error) {
+      logger.error(`Error deleting file cache entry for ${key}: ${error}`)
+    } else {
+      await fsPromises.rm(cidToFilePath(key))
+    }
+  })
 
   const cache = {
     get,

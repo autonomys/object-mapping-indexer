@@ -1,4 +1,10 @@
 import { getDB } from '../../drivers/sqlite.js'
+import { Keyv } from 'keyv'
+import { createCache } from 'cache-manager'
+
+const cache = createCache({
+  stores: [new Keyv()],
+})
 
 const registry = {
   initialized: false,

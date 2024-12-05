@@ -237,6 +237,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@keyv/serialize@npm:*":
+  version: 1.0.1
+  resolution: "@keyv/serialize@npm:1.0.1"
+  dependencies:
+    buffer: "npm:^6.0.3"
+  checksum: 10c0/948fadc632f6050b67cb8ea664192a98d7743015e1b449d383addacbce371414b9cd7129b33ab36d5d81b558744ab0a56c2753b287e7c4f5b2c46401c486cbd0
+  languageName: node
+  linkType: hard
+
 "@leichtgewicht/ip-codec@npm:^2.0.1":
   version: 2.0.5
   resolution: "@leichtgewicht/ip-codec@npm:2.0.5"
@@ -1255,6 +1264,25 @@ __metadata:
     tar: "npm:^6.1.11"
     unique-filename: "npm:^3.0.0"
   checksum: 10c0/6c055bafed9de4f3dcc64ac3dc7dd24e863210902b7c470eb9ce55a806309b3efff78033e3d8b4f7dcc5d467f2db43c6a2857aaaf26f0094b8a351d44c42179f
+  languageName: node
+  linkType: hard
+
+"cache-manager@npm:^6.3.0":
+  version: 6.3.0
+  resolution: "cache-manager@npm:6.3.0"
+  dependencies:
+    keyv: "npm:^5.2.1"
+  checksum: 10c0/531d20b160787d1b870aa7c24e5438e27a9b9f6cf25892c576bdb7a5be1404889f080a8f5baa4d594fa8ed9dcf0366045020a4868360d1d8aaaa2db3311bba11
+  languageName: node
+  linkType: hard
+
+"cacheable@npm:^1.8.5":
+  version: 1.8.5
+  resolution: "cacheable@npm:1.8.5"
+  dependencies:
+    hookified: "npm:^1.5.0"
+    keyv: "npm:^5.2.1"
+  checksum: 10c0/cc4cbc887e333707d717cb8596e7b43e1bacb9a5dfeed8603bdb04e5aa446ead3be49bb4d347bb80271a598565df8bb379053c11e781562a16c5b8b9e7bd520d
   languageName: node
   linkType: hard
 
@@ -2556,6 +2584,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"hookified@npm:^1.5.0":
+  version: 1.5.1
+  resolution: "hookified@npm:1.5.1"
+  checksum: 10c0/75419e0136fdd0f11691da979432127c2d1ebd91ed891940f89cb54abfa04b2db66fd1c4657c99f5535a98d77827c3756d85afcf81a930fd5741bb137ecc8f7f
+  languageName: node
+  linkType: hard
+
 "http-cache-semantics@npm:^4.1.0, http-cache-semantics@npm:^4.1.1":
   version: 4.1.1
   resolution: "http-cache-semantics@npm:4.1.1"
@@ -3002,6 +3037,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"keyv@npm:^5.2.1":
+  version: 5.2.1
+  resolution: "keyv@npm:5.2.1"
+  dependencies:
+    "@keyv/serialize": "npm:*"
+  checksum: 10c0/95c986a4785bd169c1545c8263662c3e898dc446c4acd9640598ca454075b9dea73559909dded6b23df0a247031d101df84a757bb6db08bbfe06499896e494fc
+  languageName: node
+  linkType: hard
+
 "klaw@npm:^3.0.0":
   version: 3.0.0
   resolution: "klaw@npm:3.0.0"
@@ -3111,6 +3155,13 @@ __metadata:
   version: 10.4.3
   resolution: "lru-cache@npm:10.4.3"
   checksum: 10c0/ebd04fbca961e6c1d6c0af3799adcc966a1babe798f685bb84e6599266599cd95d94630b10262f5424539bc4640107e8a33aa28585374abf561d30d16f4b39fb
+  languageName: node
+  linkType: hard
+
+"lru-cache@npm:^11.0.2":
+  version: 11.0.2
+  resolution: "lru-cache@npm:11.0.2"
+  checksum: 10c0/c993b8e06ead0b24b969c1dbb5b301716aed66e320e9014a80012f5febe280b438f28ff50046b2c55ff404e889351ccb332ff91f8dd175a21f5eae80e3fb155f
   languageName: node
   linkType: hard
 
@@ -3687,6 +3738,8 @@ __metadata:
     "@typescript-eslint/eslint-plugin": "npm:^8.13.0"
     "@typescript-eslint/parser": "npm:^8.13.0"
     blockstore-core: "npm:^5.0.2"
+    cache-manager: "npm:^6.3.0"
+    cacheable: "npm:^1.8.5"
     cors: "npm:^2.8.5"
     db-migrate: "npm:^0.11.14"
     db-migrate-pg: "npm:^1.5.2"
@@ -3696,6 +3749,8 @@ __metadata:
     eslint-plugin-eslint-plugin: "npm:^6.3.1"
     eslint-plugin-prettier: "npm:^5.2.1"
     express: "npm:^4.21.1"
+    keyv: "npm:^5.2.1"
+    lru-cache: "npm:^11.0.2"
     pg: "npm:^8.13.1"
     pg-format: "npm:^1.0.4"
     prettier: "npm:^3.3.3"
