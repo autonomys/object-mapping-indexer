@@ -1,0 +1,48 @@
+{
+  "name": "object-mapping-indexer",
+  "packageManager": "yarn@4.2.2",
+  "type": "module",
+  "author": {
+    "name": "Autonomys",
+    "website": "https://autonomys.xyz"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node --loader ts-node/esm dist/server.js",
+    "dev": "node --loader ts-node/esm",
+    "test": "jest"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@autonomys/auto-dag-data": "^1.0.5",
+    "@peculiar/webcrypto": "^1.5.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "pg": "^8.13.1",
+    "pg-format": "^1.0.4",
+    "uuid": "^11.0.3",
+    "websocket": "^1.0.35",
+    "winston": "^3.17.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/pg": "^8.11.10",
+    "@types/pg-format": "^1",
+    "@types/websocket": "^1.0.10",
+    "@typescript-eslint/eslint-plugin": "^8.13.0",
+    "@typescript-eslint/parser": "^8.13.0",
+    "blockstore-core": "^5.0.2",
+    "db-migrate": "^0.11.14",
+    "db-migrate-pg": "^1.5.2",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-eslint-plugin": "^6.3.1",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.3.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
+}
