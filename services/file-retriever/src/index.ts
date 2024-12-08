@@ -14,8 +14,10 @@ app.use(
   }),
 )
 
-app.use(fileRouter)
+app.use('/files', fileRouter)
 
-app.listen(Number(env('PORT', { defaultValue: 3000 })), () => {
-  console.log(`File retriever service is running on port ${env('PORT')}`)
+const port = Number(env('FILE_RETRIEVER_PORT', { defaultValue: 8090 }))
+
+app.listen(port, () => {
+  console.log(`File retriever service is running on port ${port}`)
 })
