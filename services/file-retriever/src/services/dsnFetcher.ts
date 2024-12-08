@@ -84,19 +84,11 @@ const fetchFileAsStream = (node: PBNode): ReadableStream => {
 
         // we fetch the nodes in parallel
         const nodes = await Promise.all(
-          requestingNodes.map(async (e, sortIndex) => ({
-            sortIndex,
-            node: await fetchNode(e),
-          })),
+          requestingNodes.map(async (e) => await fetchNode(e)),
         )
 
-        // we sort the nodes by the order they were fetched
-        const sortedNodes = nodes
-          .sort((a, b) => a.sortIndex - b.sortIndex)
-          .map((e) => e.node)
-
         let newLinks: string[] = []
-        for (const node of sortedNodes) {
+        for (const node of nodes) {
           const ipldMetadata = safeIPLDDecode(node)
           // if the node has no links or has data (is the same thing), we write into the stream
           if (ipldMetadata?.data) {
