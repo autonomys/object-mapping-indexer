@@ -13,7 +13,7 @@
       "*": ["*"]
     },
     "strict": true,
-    "allowJs": true
+    "allowJs": true,
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
