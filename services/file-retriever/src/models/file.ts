@@ -1,5 +1,5 @@
 export type FileResponse = {
-  data: Buffer | ReadableStream | AsyncIterable<Buffer>
+  data: AsyncIterable<Buffer>
   mimeType?: string
   filename?: string
   size?: bigint
