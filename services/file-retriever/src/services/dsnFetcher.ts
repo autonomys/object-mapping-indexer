@@ -45,6 +45,7 @@ const fetchNode = async (
 
   const actualHash = blake3Hash(WebBuf.from(Buffer.from(blob))).toHex()
 
+  // todo: remove this
   if (objectMappingHash !== actualHash) {
     console.log(`Hash mismatch: ${objectMappingHash} !== ${actualHash}`)
   } else {
