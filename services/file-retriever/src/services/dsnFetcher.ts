@@ -46,33 +46,43 @@ const fetchNode = async (cid: string): Promise<PBNode> => {
   return node
 }
 
-const createReadStream = (node: PBNode): ReadableStream => {
+/**
+ * Fetches a file as a stream
+ *
+ * The approach is DFS-like though we use the
+ * max simultaneous fetches to speed up the process.
+ *
+ * @param node - The root node of the file
+ * @returns A readable stream of the file
+ */
+const fetchFileAsStream = (node: PBNode): ReadableStream => {
   const metadata = safeIPLDDecode(node)
 
+  // if a file is a single node (< 64KB) no additional fetching is needed
   if (metadata?.data) {
     return new ReadableStream({
       start: async (controller) => {
-        const asyncIterator = [Buffer.from(metadata.data!)]
-
-        for await (const chunk of asyncIterator) {
-          controller.enqueue(chunk)
-        }
-
+        controller.enqueue(Buffer.from(metadata.data!))
         controller.close()
       },
     })
   }
 
+  // if a file is a multi-node file, we need to fetch the nodes in the correct order
+  // bearing in mind there might be multiple levels of links, we need to fetch
+  // all the links from the root node first and then continue with the next level
   return new ReadableStream({
     start: async (controller) => {
+      // for the first iteration, we need to fetch all the links from the root node
       let requestsPending = node.Links.map(({ Hash }) => cidToString(Hash))
-      console.log(`Initial links: ${requestsPending}`)
       while (requestsPending.length > 0) {
+        // for each iteration, we fetch the nodes in batches of MAX_SIMULTANEOUS_FETCHES
         const requestingNodes = requestsPending.slice(
           0,
           MAX_SIMULTANEOUS_FETCHES,
         )
 
+        // we fetch the nodes in parallel
         const nodes = await Promise.all(
           requestingNodes.map(async (e, sortIndex) => ({
             sortIndex,
@@ -80,6 +90,7 @@ const createReadStream = (node: PBNode): ReadableStream => {
           })),
         )
 
+        // we sort the nodes by the order they were fetched
         const sortedNodes = nodes
           .sort((a, b) => a.sortIndex - b.sortIndex)
           .map((e) => e.node)
@@ -87,15 +98,18 @@ const createReadStream = (node: PBNode): ReadableStream => {
         let newLinks: string[] = []
         for (const node of sortedNodes) {
           const ipldMetadata = safeIPLDDecode(node)
+          // if the node has no links or has data (is the same thing), we write into the stream
           if (ipldMetadata?.data) {
             controller.enqueue(ipldMetadata.data)
           } else {
+            // if the node has links, we need to fetch them in the next iteration
             newLinks = newLinks.concat(
               node.Links.map((e) => cidToString(e.Hash)),
             )
           }
         }
 
+        // we update the list of pending requests with the new links
         requestsPending = [
           ...newLinks,
           ...requestsPending.slice(MAX_SIMULTANEOUS_FETCHES),
@@ -123,12 +137,12 @@ const fetchFile = async (cid: string): Promise<FileResponse> => {
       CompressionAlgorithm.ZLIB
 
   const data = isCompressedAndNotEncrypted
-    ? decompressFile(createReadStream(head), {
+    ? decompressFile(fetchFileAsStream(head), {
         algorithm: CompressionAlgorithm.ZLIB,
         chunkSize: COMPRESSION_CHUNK_SIZE,
         level: 9,
       })
-    : createReadStream(head)
+    : fetchFileAsStream(head)
 
   return {
     data,
