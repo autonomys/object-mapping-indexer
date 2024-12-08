@@ -5,6 +5,7 @@
     "services/*"
   ],
   "scripts": {
-    "indexer": "yarn workspace object-mapping-indexer"
+    "indexer": "yarn workspace object-mapping-indexer",
+    "file-retriever": "yarn workspace file-retriever"
   }
 }
