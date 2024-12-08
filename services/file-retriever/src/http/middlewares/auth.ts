@@ -8,7 +8,10 @@ export const authMiddleware: Handler = (
   res: Response,
   next: NextFunction,
 ) => {
-  const header = req.headers.authorization
+  const header =
+    typeof req.query.api_key === 'string'
+      ? req.query.api_key
+      : req.headers.authorization
 
   if (!header) {
     res.status(401).json({ error: 'Unauthorized' })
