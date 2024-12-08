@@ -1,5 +1,5 @@
 {
-  "name": "files-gateway",
+  "name": "auto-files-gateway",
   "packageManager": "yarn@4.2.2",
   "workspaces": [
     "services/*"
