@@ -6,16 +6,12 @@ import {
   MetadataType,
   cidToString,
   CompressionAlgorithm,
-  COMPRESSION_CHUNK_SIZE,
   cidOfNode,
-  decompressFile,
 } from '@autonomys/auto-dag-data'
 import { PBNode } from '@ipld/dag-pb'
 import { env } from '../utils/env.js'
 import { HttpError } from '../http/middlewares/error.js'
 import { safeIPLDDecode } from '../utils/dagData.js'
-import { blake3Hash } from '@webbuf/blake3'
-import { WebBuf } from '@webbuf/webbuf'
 import mime from 'mime-types'
 
 const SUBSPACE_GATEWAY_URL = env('SUBSPACE_GATEWAY_URL')
@@ -42,15 +38,6 @@ const fetchNode = async (
   }
 
   const blob = await response.arrayBuffer()
-
-  const actualHash = blake3Hash(WebBuf.from(Buffer.from(blob))).toHex()
-
-  // todo: remove this
-  if (objectMappingHash !== actualHash) {
-    console.log(`Hash mismatch: ${objectMappingHash} !== ${actualHash}`)
-  } else {
-    console.log(`Hash match: ${objectMappingHash} === ${actualHash}`)
-  }
 
   const node = decodeNode(blob)
 
@@ -143,19 +130,17 @@ const fetchFile = async (cid: string): Promise<FileResponse> => {
     nodeMetadata.uploadOptions?.compression?.algorithm ===
       CompressionAlgorithm.ZLIB
 
-  const data = isCompressedAndNotEncrypted
-    ? decompressFile(fetchFileAsStream(head), {
-        algorithm: CompressionAlgorithm.ZLIB,
-        chunkSize: COMPRESSION_CHUNK_SIZE,
-        level: 9,
-      })
-    : fetchFileAsStream(head)
+  const data = fetchFileAsStream(head)
 
   return {
     data,
     size: nodeMetadata.size,
-    mimeType: mime.lookup(nodeMetadata.name ?? '') || undefined,
+    mimeType:
+      isCompressedAndNotEncrypted && nodeMetadata.name
+        ? mime.lookup(nodeMetadata.name) || undefined
+        : undefined,
     filename: nodeMetadata.name,
+    encoding: isCompressedAndNotEncrypted ? 'deflate' : 'utf-8',
   }
 }
 

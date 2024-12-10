@@ -19,6 +19,9 @@ fileRouter.get('/:cid', authMiddleware, async (req, res) => {
   if (file.size) {
     res.set('Content-Length', file.size.toString())
   }
+  if (file.encoding) {
+    res.set('Content-Encoding', file.encoding)
+  }
 
   pipeline(file.data, res, (err) => {
     if (err) {
