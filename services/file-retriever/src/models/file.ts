@@ -3,5 +3,5 @@ export type FileResponse = {
   mimeType?: string
   filename?: string
   size?: bigint
-  encoding: string
+  encoding?: string
 }

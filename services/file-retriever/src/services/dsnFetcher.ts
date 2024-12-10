@@ -140,7 +140,7 @@ const fetchFile = async (cid: string): Promise<FileResponse> => {
         ? mime.lookup(nodeMetadata.name) || undefined
         : undefined,
     filename: nodeMetadata.name,
-    encoding: isCompressedAndNotEncrypted ? 'deflate' : 'utf-8',
+    encoding: isCompressedAndNotEncrypted ? 'deflate' : undefined,
   }
 }
 
