@@ -10,6 +10,7 @@ import path from 'path'
 import KeyvSqlite from '@keyvhq/sqlite'
 
 const TEN_GB = 10 * 1024 ** 3
+const ONE_DAY = 24 * 60 * 60 * 1000
 
 const cacheDir = env('CACHE_DIR', {
   defaultValue: './.cache',
@@ -38,6 +39,7 @@ const cache = createFileCache({
       store: new KeyvSqlite({
         uri: path.join(cacheDir, 'files.sqlite'),
       }),
+      ttl: ONE_DAY,
       serialize: stringify,
     }),
   ],
