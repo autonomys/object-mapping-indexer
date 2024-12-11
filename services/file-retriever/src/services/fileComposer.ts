@@ -39,7 +39,11 @@ const cache = createFileCache({
       store: new KeyvSqlite({
         uri: path.join(cacheDir, 'files.sqlite'),
       }),
-      ttl: ONE_DAY,
+      ttl: Number(
+        env('CACHE_TTL', {
+          defaultValue: ONE_DAY,
+        }),
+      ),
       serialize: stringify,
     }),
   ],
