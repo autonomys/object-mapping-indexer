@@ -59,10 +59,15 @@ const get = async (cid: string): Promise<FileResponse> => {
 
   const [data, cachingStream] = await forkAsyncIterable(file.data)
 
-  await cache.set(cid, {
-    ...file,
-    data: cachingStream,
-  })
+  // Non-blocking cache set
+  cache
+    .set(cid, {
+      ...file,
+      data: cachingStream,
+    })
+    .catch((e) => {
+      console.error('Error caching file', e)
+    })
 
   return {
     ...file,
