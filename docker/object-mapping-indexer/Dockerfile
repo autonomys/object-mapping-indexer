@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     libsqlite3-dev
 RUN npm install -g corepack
 RUN corepack prepare yarn@4.2.2 --activate
+RUN rm -rf node_modules
 RUN yarn add tar
 RUN yarn
 RUN yarn indexer build

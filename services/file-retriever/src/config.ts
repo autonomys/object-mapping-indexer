@@ -1,4 +1,4 @@
-import { env } from './utils/env'
+import { env } from './utils/env.js'
 
 const TEN_GB = 10 * 1024 ** 3
 const ONE_DAY = 24 * 60 * 60 * 1000
