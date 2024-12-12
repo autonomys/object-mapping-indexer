@@ -13,10 +13,10 @@ RUN apt-get update && apt-get install -y \
     libsqlite3-dev
 RUN npm install -g corepack
 RUN corepack prepare yarn@4.2.2 --activate
-RUN npm install tar
-RUN npm install
-RUN npm run build
+RUN yarn add tar
+RUN yarn
+RUN yarn file-retriever build
 
 EXPOSE 8090
 
-CMD ["bash", "start-server.sh"]
+CMD ["yarn", "file-retriever", "start"]
