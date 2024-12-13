@@ -16,7 +16,7 @@ type SubstrateEventListenerState = {
 export const createSubstrateEventListener = () => {
   const state: SubstrateEventListenerState = {
     subscriptions: {},
-    ws: createWS(config.rpcUrl),
+    ws: createWS(config.subspaceGatewayURL),
   }
 
   const subscribe = async (

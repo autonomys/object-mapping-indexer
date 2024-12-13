@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "node --loader ts-node/esm dist/server.js",
+    "start": "node dist/server.js",
     "dev": "node --loader ts-node/esm",
     "test": "jest"
   },
