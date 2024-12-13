@@ -1,10 +1,78 @@
 import { FileResponse } from '../models/file.js'
+import { Keyv } from 'keyv'
 import { dsnFetcher } from './dsnFetcher.js'
+import { createFileCache } from './fileCache/index.js'
+import { LRUCache } from 'lru-cache'
+import { env } from '../utils/env.js'
+import { forkAsyncIterable } from '../utils/stream.js'
+import { stringify } from '@autonomys/auto-utils'
+import path from 'path'
+import KeyvSqlite from '@keyvhq/sqlite'
+
+const TEN_GB = 10 * 1024 ** 3
+const ONE_DAY = 24 * 60 * 60 * 1000
+
+const cacheDir = env('CACHE_DIR', {
+  defaultValue: './.cache',
+})
+
+const cache = createFileCache({
+  cacheDir: path.join(cacheDir, 'files'),
+  pathPartitions: 3,
+  stores: [
+    new Keyv({
+      serialize: stringify,
+      store: new LRUCache<string, string>({
+        maxSize: Number(
+          env('CACHE_MAX_SIZE', {
+            defaultValue: TEN_GB,
+          }),
+        ),
+        maxEntrySize: Number.MAX_SAFE_INTEGER,
+        sizeCalculation: (value) => {
+          const { value: parsedValue } = JSON.parse(value)
+          return Number(parsedValue?.size ?? 0)
+        },
+      }),
+    }),
+    new Keyv({
+      store: new KeyvSqlite({
+        uri: path.join(cacheDir, 'files.sqlite'),
+      }),
+      ttl: Number(
+        env('CACHE_TTL', {
+          defaultValue: ONE_DAY,
+        }),
+      ),
+      serialize: stringify,
+    }),
+  ],
+})
 
 const get = async (cid: string): Promise<FileResponse> => {
-  // TODO: Implement cache logic
+  const cachedFile = await cache.get(cid)
+  if (cachedFile) {
+    return cachedFile
+  }
 
-  return dsnFetcher.fetchFile(cid)
+  const file = await dsnFetcher.fetchFile(cid)
+
+  const [data, cachingStream] = await forkAsyncIterable(file.data)
+
+  // Non-blocking cache set
+  cache
+    .set(cid, {
+      ...file,
+      data: cachingStream,
+    })
+    .catch((e) => {
+      console.error('Error caching file', e)
+    })
+
+  return {
+    ...file,
+    data,
+  }
 }
 
 export const fileComposer = {
