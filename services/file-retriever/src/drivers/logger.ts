@@ -6,6 +6,7 @@ export interface Logger {
   error: (message: string) => Promise<void>
   warn: (message: string) => Promise<void>
   debug: (message: string) => Promise<void>
+  trace: (message: string) => Promise<void>
 }
 
 const winstonLogger = createLogger({
@@ -26,5 +27,8 @@ export const logger: Logger = {
   },
   debug: async (message: string) => {
     winstonLogger.debug(message)
+  },
+  trace: async (message: string) => {
+    winstonLogger.verbose(message)
   },
 }

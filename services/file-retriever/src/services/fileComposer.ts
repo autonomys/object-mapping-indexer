@@ -8,6 +8,7 @@ import { stringify } from '@autonomys/auto-utils'
 import path from 'path'
 import KeyvSqlite from '@keyvhq/sqlite'
 import { config } from '../config.js'
+import { logger } from '../drivers/logger.js'
 
 const cache = createFileCache({
   cacheDir: path.join(config.cacheDir, 'files'),
@@ -37,12 +38,19 @@ const cache = createFileCache({
 const get = async (cid: string): Promise<FileResponse> => {
   const cachedFile = await cache.get(cid)
   if (cachedFile) {
+    logger.debug(`Cache hit for file ${cid}`)
     return cachedFile
   }
 
+  let start = performance.now()
   const file = await dsnFetcher.fetchFile(cid)
+  let end = performance.now()
+  logger.debug(`Fetching file from DSN ${cid} took ${end - start}ms`)
 
+  start = performance.now()
   const [data, cachingStream] = await forkAsyncIterable(file.data)
+  end = performance.now()
+  logger.debug(`Forking file ${cid} took ${end - start}ms`)
 
   await cache
     .set(cid, {
