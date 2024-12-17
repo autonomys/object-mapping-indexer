@@ -1,5 +1,4 @@
 volumes:
-  subspace-node-data: {}
   postgres-data: {}
 
 services:
@@ -25,37 +24,43 @@ services:
       --rpc-max-connections 20000
       --name object-mapping-node
       --sync full
-      --create-object-mappings${BLOCK_NUMBER_TO_START_FROM:+ ${BLOCK_NUMBER_TO_START_FROM}}
+      --create-object-mappings ${BLOCK_NUMBER_TO_START_FROM}
     healthcheck:
       timeout: 5s
       interval: 30s
       retries: 60
     stop_grace_period: 30s
+  subspace-gateway:
+    image: ghcr.io/autonomys/gateway:${GATEWAY_DOCKER_TAG}
+    ports:
+      - '9955:9955'
+    restart: unless-stopped
+    command: rpc --node-rpc-url ws://subspace-node:9944/ws
+    depends_on:
+      subspace-node:
+        condition: service_healthy
   object-mapping-app:
     image: node:20
     container_name: object-mapping-app
-    working_dir: /usr/src/app
+    working_dir: /app
     volumes:
-      - .:/usr/src/app
+      - .:/app
     ports:
       - '3000:3000'
     environment:
+      # constants
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
-      - RPC_URL=ws://subspace-node:9944/ws
+      - OBJECT_MAPPING_INDEXER_PORT=8080
+      - SUBSPACE_GATEWAY_URL=http://subspace-rpc-gateway:9955
+
+      # variables
+      - DATABASE_URL=${DATABASE_URL}
+      - REQUEST_SIZE_LIMIT=${REQUEST_SIZE_LIMIT}
+      - CORS_ALLOW_ORIGINS=${CORS_ALLOW_ORIGINS}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - RECOVERY_INTERVAL=${RECOVERY_INTERVAL}
     entrypoint: ['bash', './start-server.sh']
     depends_on:
       subspace-node:
         condition: service_healthy
     restart: unless-stopped
-  postgres:
-    image: postgres:latest
-    container_name: object-mapping-postgres_db
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
-    ports:
-      - '5432:5432'
-    volumes:
-      - postgres-data:/var/lib/postgresql/data

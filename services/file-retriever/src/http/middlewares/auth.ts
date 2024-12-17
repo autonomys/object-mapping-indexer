@@ -1,7 +1,5 @@
 import { Handler, NextFunction, Request, Response } from 'express'
-import { env } from '../../utils/env.js'
-
-const API_SECRET = env('API_SECRET')
+import { config } from '../../config.js'
 
 export const authMiddleware: Handler = (
   req: Request,
@@ -25,7 +23,7 @@ export const authMiddleware: Handler = (
     return
   }
 
-  if (token !== API_SECRET) {
+  if (token !== config.apiSecret) {
     res.status(401).json({ error: 'Unauthorized' })
     return
   }
