@@ -2,10 +2,13 @@ import { Router } from 'express'
 import { authMiddleware } from '../middlewares/auth.js'
 import { fileComposer } from '../../services/fileComposer.js'
 import { pipeline } from 'stream'
+import { logger } from '../../drivers/logger.js'
 
 const fileRouter = Router()
 
 fileRouter.get('/:cid', authMiddleware, async (req, res) => {
+  logger.debug(`Fetching file ${req.params.cid} from ${req.ip}`)
+
   const cid = req.params.cid
 
   const file = await fileComposer.get(cid)
@@ -22,6 +25,10 @@ fileRouter.get('/:cid', authMiddleware, async (req, res) => {
   if (file.encoding) {
     res.set('Content-Encoding', file.encoding)
   }
+
+  logger.debug(
+    `Streaming file ${req.params.cid} to ${req.ip} with ${file.size} bytes`,
+  )
 
   pipeline(file.data, res, (err) => {
     if (err) {

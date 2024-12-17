@@ -5,6 +5,7 @@ import { createCache } from 'cache-manager'
 import { writeFile } from '../../utils/fs.js'
 import { BaseCacheConfig } from './types.js'
 import { FileResponse } from '../../models/file.js'
+import { logger } from '../../drivers/logger.js'
 
 const CHARS_PER_PARTITION = 2
 
@@ -46,14 +47,18 @@ export const createFileCache = (config: BaseCacheConfig) => {
   }
 
   const get = async (cid: string): Promise<FileResponse | null> => {
+    const start = performance.now()
     const data: UncheckedFileCacheEntry = deserialize(
       await filepathCache.get(cid),
     )
+    const end = performance.now()
+    logger.debug(`Getting file cache entry for ${cid} took ${end - start}ms`)
     if (!data) {
       return null
     }
 
     const path = cidToFilePath(cid)
+
     return {
       ...data,
       data: fs.createReadStream(path),
@@ -65,11 +70,21 @@ export const createFileCache = (config: BaseCacheConfig) => {
 
     const { data, ...rest } = fileResponse
 
-    const cachePromise = filepathCache.set(cid, {
-      ...rest,
-    })
+    const start = performance.now()
+    const cachePromise = filepathCache
+      .set(cid, {
+        ...rest,
+      })
+      .then(() => {
+        const end = performance.now()
+        logger.debug(`Caching file for ${cid} took ${end - start}ms`)
+      })
 
-    const writePromise = writeFile(filePath, data)
+    const start2 = performance.now()
+    const writePromise = writeFile(filePath, data).then(() => {
+      const end2 = performance.now()
+      logger.debug(`Writing file to cache for ${cid} took ${end2 - start2}ms`)
+    })
 
     await Promise.all([cachePromise, writePromise])
   }

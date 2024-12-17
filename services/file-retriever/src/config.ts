@@ -8,6 +8,7 @@ export const config = {
   apiSecret: env('API_SECRET'),
   subspaceGatewayUrl: env('SUBSPACE_GATEWAY_URL'),
   // Optional
+  logLevel: env('LOG_LEVEL', { defaultValue: 'info' }),
   port: Number(env('FILE_RETRIEVER_PORT', { defaultValue: 8090 })),
   corsOrigin: env('CORS_ORIGIN', { defaultValue: '*' }),
   maxSimultaneousFetches: Number(
