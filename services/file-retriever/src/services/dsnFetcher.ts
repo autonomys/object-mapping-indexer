@@ -9,17 +9,10 @@ import {
   cidOfNode,
 } from '@autonomys/auto-dag-data'
 import { PBNode } from '@ipld/dag-pb'
-import { env } from '../utils/env.js'
 import { HttpError } from '../http/middlewares/error.js'
 import { safeIPLDDecode } from '../utils/dagData.js'
 import mime from 'mime-types'
-
-const SUBSPACE_GATEWAY_URL = env('SUBSPACE_GATEWAY_URL')
-const MAX_SIMULTANEOUS_FETCHES = Number(
-  env('MAX_SIMULTANEOUS_FETCHES', {
-    defaultValue: 10,
-  }),
-)
+import { config } from '../config.js'
 
 const fetchNode = async (
   cid: string,
@@ -30,7 +23,7 @@ const fetchNode = async (
   ).toString('hex')
 
   const response = await fetch(
-    `${SUBSPACE_GATEWAY_URL}/data/${objectMappingHash}`,
+    `${config.subspaceGatewayUrl}/data/${objectMappingHash}`,
   )
   if (!response.ok) {
     console.error('Failed to fetch node', response)
@@ -81,7 +74,7 @@ const fetchFileAsStream = (node: PBNode): ReadableStream => {
         // for each iteration, we fetch the nodes in batches of MAX_SIMULTANEOUS_FETCHES
         const requestingNodes = requestsPending.slice(
           0,
-          MAX_SIMULTANEOUS_FETCHES,
+          config.maxSimultaneousFetches,
         )
 
         // we fetch the nodes in parallel
@@ -106,7 +99,7 @@ const fetchFileAsStream = (node: PBNode): ReadableStream => {
         // we update the list of pending requests with the new links
         requestsPending = [
           ...newLinks,
-          ...requestsPending.slice(MAX_SIMULTANEOUS_FETCHES),
+          ...requestsPending.slice(config.maxSimultaneousFetches),
         ]
       }
       controller.close()
