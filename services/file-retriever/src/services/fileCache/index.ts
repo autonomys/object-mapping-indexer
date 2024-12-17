@@ -52,7 +52,7 @@ export const createFileCache = (config: BaseCacheConfig) => {
       await filepathCache.get(cid),
     )
     const end = performance.now()
-    logger.trace(`Getting file cache entry for ${cid} took ${end - start}ms`)
+    logger.debug(`Getting file cache entry for ${cid} took ${end - start}ms`)
     if (!data) {
       return null
     }
@@ -77,13 +77,13 @@ export const createFileCache = (config: BaseCacheConfig) => {
       })
       .then(() => {
         const end = performance.now()
-        logger.trace(`Caching file for ${cid} took ${end - start}ms`)
+        logger.debug(`Caching file for ${cid} took ${end - start}ms`)
       })
 
     const start2 = performance.now()
     const writePromise = writeFile(filePath, data).then(() => {
       const end2 = performance.now()
-      logger.trace(`Writing file to cache for ${cid} took ${end2 - start2}ms`)
+      logger.debug(`Writing file to cache for ${cid} took ${end2 - start2}ms`)
     })
 
     await Promise.all([cachePromise, writePromise])

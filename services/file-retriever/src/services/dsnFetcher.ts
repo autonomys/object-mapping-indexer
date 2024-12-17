@@ -41,7 +41,7 @@ const fetchNode = async (
   }
 
   const end = performance.now()
-  logger.trace(`Fetching node ${cid} took ${end - start}ms`)
+  logger.debug(`Fetching node ${cid} took ${end - start}ms`)
   return node
 }
 
@@ -78,7 +78,7 @@ const fetchFileAsStream = (node: PBNode): ReadableStream => {
   // all the links from the root node first and then continue with the next level
   return new ReadableStream({
     start: async (controller) => {
-      logger.trace('Starting to fetch file')
+      logger.debug('Starting to fetch file')
       // for the first iteration, we need to fetch all the links from the root node
       let requestsPending = node.Links.map(({ Hash }) => cidToString(Hash))
       while (requestsPending.length > 0) {
@@ -94,7 +94,7 @@ const fetchFileAsStream = (node: PBNode): ReadableStream => {
           requestingNodes.map(async (e) => await fetchNode(e)),
         )
         const end = performance.now()
-        logger.trace(
+        logger.debug(
           `Fetching ${requestingNodes.length} nodes took ${end - start}ms`,
         )
 
