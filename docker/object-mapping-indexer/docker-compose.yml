@@ -54,7 +54,6 @@ services:
       - SUBSPACE_GATEWAY_URL=http://subspace-rpc-gateway:9955
 
       # variables
-      - DATABASE_URL=${DATABASE_URL}
       - REQUEST_SIZE_LIMIT=${REQUEST_SIZE_LIMIT}
       - CORS_ALLOW_ORIGINS=${CORS_ALLOW_ORIGINS}
       - LOG_LEVEL=${LOG_LEVEL}
