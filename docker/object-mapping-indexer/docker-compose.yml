@@ -30,15 +30,6 @@ services:
       interval: 30s
       retries: 60
     stop_grace_period: 30s
-  subspace-gateway:
-    image: ghcr.io/autonomys/gateway:${GATEWAY_DOCKER_TAG}
-    ports:
-      - '9955:9955'
-    restart: unless-stopped
-    command: rpc --node-rpc-url ws://subspace-node:9944/ws
-    depends_on:
-      subspace-node:
-        condition: service_healthy
   object-mapping-app:
     build:
       context: ../..
@@ -50,8 +41,8 @@ services:
     environment:
       # constants
       - NODE_ENV=production
-      - OBJECT_MAPPING_INDEXER_PORT=8080
-      - SUBSPACE_GATEWAY_URL=http://subspace-rpc-gateway:9955
+      - OBJECT_MAPPING_INDEXER_PORT=3000
+      - NODE_RPC_URL=ws://subspace-node:9944/ws
 
       # variables
       - REQUEST_SIZE_LIMIT=${REQUEST_SIZE_LIMIT}
