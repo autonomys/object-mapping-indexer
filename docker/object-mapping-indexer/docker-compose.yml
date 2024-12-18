@@ -1,5 +1,5 @@
 volumes:
-  postgres-data: {}
+  subspace-node-data: {}
 
 services:
   subspace-node:
@@ -40,11 +40,11 @@ services:
       subspace-node:
         condition: service_healthy
   object-mapping-app:
-    image: node:20
+    build:
+      context: ../..
+      dockerfile: docker/object-mapping-indexer/Dockerfile
     container_name: object-mapping-app
     working_dir: /app
-    volumes:
-      - .:/app
     ports:
       - '3000:3000'
     environment:
@@ -59,7 +59,6 @@ services:
       - CORS_ALLOW_ORIGINS=${CORS_ALLOW_ORIGINS}
       - LOG_LEVEL=${LOG_LEVEL}
       - RECOVERY_INTERVAL=${RECOVERY_INTERVAL}
-    entrypoint: ['bash', './start-server.sh']
     depends_on:
       subspace-node:
         condition: service_healthy

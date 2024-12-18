@@ -42,7 +42,7 @@ services:
     command: http --node-rpc-url ws://subspace-node:9944/ws
   file-retriever:
     build:
-      context: .
+      context: ../..
       dockerfile: docker/file-retriever/Dockerfile
     container_name: file-retriever
     volumes:
@@ -51,7 +51,7 @@ services:
       - '8090:8090'
     environment:
       - NODE_ENV=production
-      - SUBSPACE_GATEWAY_URL=${SUBSPACE_GATEWAY_URL}
+      - SUBSPACE_GATEWAY_URL=http://subspace-rpc-gateway:8080
       - CORS_ORIGIN=${CORS_ORIGIN}
       - MAX_SIMULTANEOUS_FETCHES=${MAX_SIMULTANEOUS_FETCHES}
       - CACHE_DIR=${CACHE_DIR}
